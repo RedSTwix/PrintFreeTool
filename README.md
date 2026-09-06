@@ -4,6 +4,29 @@ Aplicativo de captura de tela para Windows, feito em C# com WPF e executado em
 segundo plano pela bandeja do sistema. As capturas são salvas automaticamente em
 PNG e copiadas para a área de transferência.
 
+## Interface
+
+<p align="center">
+  <img src="docs/images/main-window.png" alt="Janela principal do PrintFreeTool" width="560">
+</p>
+
+### Editor integrado
+
+![Editor de captura do PrintFreeTool](docs/images/editor.png)
+
+### Configurações
+
+<table>
+  <tr>
+    <td width="46%"><img src="docs/images/settings.png" alt="Configurações gerais do PrintFreeTool"></td>
+    <td width="54%"><img src="docs/images/monitor-settings.png" alt="Configuração dos monitores para o Print Screen"></td>
+  </tr>
+  <tr>
+    <td align="center">Atalhos e preferências</td>
+    <td align="center">Captura em múltiplos monitores</td>
+  </tr>
+</table>
+
 ## Atalhos
 
 | Atalho | Ação |
