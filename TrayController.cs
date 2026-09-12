@@ -8,8 +8,10 @@ internal sealed class TrayController : IDisposable
     private readonly Forms.NotifyIcon _notifyIcon;
     private readonly Drawing.Icon _icon;
     private readonly Forms.ToolStripMenuItem _captureMenuItem;
+    private readonly Forms.ToolStripMenuItem _gameModeMenuItem;
+    private ToastWindow? _toastWindow;
 
-    public TrayController(HotkeyShortcut shortcut)
+    public TrayController(HotkeyShortcut shortcut, bool isAdministrator)
     {
         var menu = new Forms.ContextMenuStrip();
         menu.Items.Add("Abrir PrintFreeTool", null, (_, _) => OpenRequested?.Invoke());
@@ -18,6 +20,15 @@ internal sealed class TrayController : IDisposable
         menu.Items.Add("Captura com editor   Win + Shift + E", null, (_, _) => EditorCaptureRequested?.Invoke());
         menu.Items.Add("Capturar janela ativa   Win + Shift + A", null, (_, _) => ActiveWindowCaptureRequested?.Invoke());
         menu.Items.Add("Abrir pasta de capturas", null, (_, _) => CaptureService.OpenCaptureFolder());
+        menu.Items.Add(new Forms.ToolStripSeparator());
+        _gameModeMenuItem = new Forms.ToolStripMenuItem(
+            isAdministrator ? "Modo jogos ativo   ✓" : "Ativar modo jogos (Administrador)",
+            null,
+            (_, _) => GameModeRequested?.Invoke())
+        {
+            Enabled = !isAdministrator
+        };
+        menu.Items.Add(_gameModeMenuItem);
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add("Sair", null, (_, _) => ExitRequested?.Invoke());
 
@@ -43,6 +54,7 @@ internal sealed class TrayController : IDisposable
     public event Action? CaptureRequested;
     public event Action? EditorCaptureRequested;
     public event Action? ActiveWindowCaptureRequested;
+    public event Action? GameModeRequested;
     public event Action? OpenRequested;
     public event Action? ExitRequested;
 
@@ -55,14 +67,19 @@ internal sealed class TrayController : IDisposable
 
     public void ShowMessage(string title, string message, bool isError = false)
     {
-        _notifyIcon.BalloonTipTitle = title;
-        _notifyIcon.BalloonTipText = message;
-        _notifyIcon.BalloonTipIcon = isError ? Forms.ToolTipIcon.Error : Forms.ToolTipIcon.Info;
-        _notifyIcon.ShowBalloonTip(4000);
+        System.Windows.Application.Current.Dispatcher.BeginInvoke(() =>
+        {
+            _toastWindow?.Close();
+            _toastWindow = new ToastWindow(title, message, isError);
+            _toastWindow.Closed += (_, _) => _toastWindow = null;
+            _toastWindow.Show();
+        });
     }
 
     public void Dispose()
     {
+        _toastWindow?.Close();
+        _toastWindow = null;
         _notifyIcon.Visible = false;
         _notifyIcon.ContextMenuStrip?.Dispose();
         _notifyIcon.Dispose();

@@ -1,3 +1,6 @@
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Windows;
 
@@ -19,16 +22,20 @@ public partial class App : System.Windows.Application
     {
         base.OnStartup(e);
 
+        bool isElevatedReplacement = e.Args.Contains("--replace-elevated", StringComparer.OrdinalIgnoreCase);
         _singleInstanceMutex = new Mutex(true, @"Local\PrintFreeTool.SingleInstance", out bool isFirstInstance);
         if (!isFirstInstance)
         {
-            System.Windows.MessageBox.Show(
-                "O PrintFreeTool já está em execução na bandeja do sistema.",
-                "PrintFreeTool",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-            Shutdown();
-            return;
+            if (!isElevatedReplacement || !WaitForPreviousInstance())
+            {
+                System.Windows.MessageBox.Show(
+                    "O PrintFreeTool já está em execução na bandeja do sistema.",
+                    "PrintFreeTool",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                Shutdown();
+                return;
+            }
         }
 
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
@@ -41,10 +48,12 @@ public partial class App : System.Windows.Application
         }
         _printScreenSettings = SettingsService.LoadPrintScreenSettings();
 
-        _tray = new TrayController(shortcut);
+        bool isAdministrator = ElevationService.IsAdministrator;
+        _tray = new TrayController(shortcut, isAdministrator);
         _tray.CaptureRequested += ShowDirectCaptureOverlay;
         _tray.EditorCaptureRequested += ShowEditorCaptureOverlay;
         _tray.ActiveWindowCaptureRequested += CaptureActiveWindowImmediately;
+        _tray.GameModeRequested += RestartAsAdministrator;
         _tray.OpenRequested += ShowMainWindow;
         _tray.ExitRequested += ExitApplication;
 
@@ -62,8 +71,10 @@ public partial class App : System.Windows.Application
         {
             _keyboardHook.Start();
             _tray.ShowMessage(
-                "PrintFreeTool está pronto",
-                $"Pressione {shortcut.DisplayText} para selecionar uma área da tela.");
+                isAdministrator ? "Modo jogos ativo" : "PrintFreeTool está pronto",
+                isAdministrator
+                    ? "Capturas em jogos elevados estão habilitadas."
+                    : $"Pressione {shortcut.DisplayText} para selecionar uma área da tela.");
         }
         catch (Exception exception)
         {
@@ -73,6 +84,56 @@ public partial class App : System.Windows.Application
                 "PrintFreeTool",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
+        }
+    }
+
+    private bool WaitForPreviousInstance()
+    {
+        if (_singleInstanceMutex is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            return _singleInstanceMutex.WaitOne(TimeSpan.FromSeconds(8));
+        }
+        catch (AbandonedMutexException)
+        {
+            return true;
+        }
+    }
+
+    private void RestartAsAdministrator()
+    {
+        if (ElevationService.IsAdministrator)
+        {
+            _tray?.ShowMessage("Modo jogos ativo", "O PrintFreeTool já está executando como administrador.");
+            return;
+        }
+
+        try
+        {
+            string executable = Environment.ProcessPath
+                                ?? throw new InvalidOperationException("Não foi possível localizar o executável do PrintFreeTool.");
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = executable,
+                Arguments = "--replace-elevated",
+                WorkingDirectory = Path.GetDirectoryName(executable) ?? AppContext.BaseDirectory,
+                UseShellExecute = true,
+                Verb = "runas",
+                WindowStyle = ProcessWindowStyle.Hidden
+            });
+            ExitApplication();
+        }
+        catch (Win32Exception exception) when (exception.NativeErrorCode == 1223)
+        {
+            _tray?.ShowMessage("Modo jogos cancelado", "A permissão de administrador não foi concedida.", isError: true);
+        }
+        catch (Exception exception)
+        {
+            _tray?.ShowMessage("Não foi possível ativar o modo jogos", exception.Message, isError: true);
         }
     }
 

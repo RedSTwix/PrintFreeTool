@@ -49,11 +49,23 @@ cancelar.
 - navegação da imagem ampliada pelas setas do teclado e barras de rolagem estilizadas;
 - captura da janela ativa com Windows Graphics Capture e fallback pela área visível;
 - aviso quando a janela devolve uma imagem vazia ou bloqueada, o que pode indicar DRM;
+- modo jogos opcional para capturar aplicativos executados como administrador;
 - configuração do `Print Screen` para todas as telas, monitores selecionados ou um
   arquivo PNG separado para cada monitor.
 
 No modo de arquivos separados, a tela principal também é copiada para a área de
 transferência.
+
+## Capturas em jogos elevados
+
+Alguns jogos com anti-cheat são executados como administrador e impedem que
+aplicativos em nível padrão recebam a tecla `Print Screen`. Nesses casos, clique
+com o botão direito no ícone da bandeja e escolha **Ativar modo jogos
+(Administrador)**. Após confirmar o UAC do Windows, o menu mostrará **Modo jogos
+ativo**.
+
+O modo vale somente para a execução atual do PrintFreeTool e não modifica nem
+injeta componentes no jogo ou no anti-cheat.
 
 ## Requisitos
 
