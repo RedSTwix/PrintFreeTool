@@ -18,10 +18,10 @@ jobs:
 
     steps:
       - name: Baixar o código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Instalar .NET 8
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 8.0.x
 
@@ -55,7 +55,7 @@ jobs:
           "$hash  PrintFreeTool-windows-x64.exe" | Set-Content dist/SHA256SUMS.txt -Encoding ascii
 
       - name: Armazenar resultado do build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: PrintFreeTool-windows-x64
           path: |
@@ -76,18 +76,18 @@ jobs:
 
     steps:
       - name: Baixar artefatos validados
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: PrintFreeTool-windows-x64
           path: dist
 
       - name: Atestar procedência do executável
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: dist/PrintFreeTool-windows-x64.exe
 
       - name: Criar release no GitHub
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           generate_release_notes: true
           files: |
