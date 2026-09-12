@@ -4,6 +4,13 @@ Aplicativo de captura de tela para Windows, feito em C# com WPF e executado em
 segundo plano pela bandeja do sistema. As capturas são salvas automaticamente em
 PNG e copiadas para a área de transferência.
 
+## Downloads
+
+Baixe a versão mais recente na página de
+[Releases](https://github.com/RedSTwix/PrintFreeTool/releases/latest). Cada versão
+inclui o executável independente `PrintFreeTool-windows-x64.exe` e o arquivo
+`SHA256SUMS.txt` para verificação de integridade.
+
 ## Interface
 
 <p align="center">
@@ -98,6 +105,11 @@ dotnet publish .\PrintFreeTool.csproj -c Release -r win-x64 --self-contained fal
 
 O executável será criado em `dist\PrintFreeTool.exe`. A pasta `dist` é um artefato
 local e não faz parte do repositório.
+
+No GitHub, o workflow valida pushes e pull requests. Uma tag de versão compatível
+com o valor de `<Version>` no projeto, como `v1.0.0`, também publica automaticamente
+uma Release com executável Windows x64 independente, checksum SHA-256 e atestado
+de procedência.
 
 ## Dados locais
 

@@ -11,6 +11,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>PrintFreeTool</AssemblyName>
     <RootNamespace>PrintFreeTool</RootNamespace>
+    <Version>1.0.0</Version>
     <NoWarn>$(NoWarn);WFAC010</NoWarn>
   </PropertyGroup>
 
